@@ -9,7 +9,6 @@ import FormInput from "../form-input/form-input.component";
 import Button from '../button/button.component'
 import './sign-up-form.styles.scss'
 
-
 const defaultFormFields = {
     displayName: "",
     email: "",
@@ -21,11 +20,19 @@ const SignUpForm = () => {
     const [formFields, setFormFields] = useState(defaultFormFields);
     const { displayName, email, password, confirmPassword } = formFields;
 
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormFields({ ...formFields, [name]: value });
     };
-
+    const clearFields = () => {
+        setFormFields({
+            displayName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+        })
+    }
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (password != confirmPassword) {
@@ -36,7 +43,8 @@ const SignUpForm = () => {
                 email,
                 password
             );
-            const userDoc = await createUserDocumentFromAuth(user, { displayName });
+            await createUserDocumentFromAuth(user, { displayName });
+            clearFields()
         } catch (error) {
             console.error(error);
         }
