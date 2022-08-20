@@ -16,7 +16,11 @@ import {
     getFirestore,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    collection,
+    writeBatch,
+    query,
+    getDocs
 } from 'firebase/firestore'
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -45,6 +49,41 @@ export const signInWithGooglePopup = () => signInWithPopup(auth, googleProvider)
 export const signInWithGoogleRedirect = () => signInWithRedirect(auth, googleProvider)
 
 export const db = getFirestore()
+
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+    const collectionRef = collection(db, collectionKey)
+    const batch = writeBatch(db)
+    objectsToAdd.forEach((obj) => {
+        const docRef = doc(collectionRef, obj.title.toLowerCase())
+        batch.set(docRef, obj)
+    })
+    await batch.commit()
+    console.log('done')
+}
+
+export const getCategoriesAndDocuments = async () => {
+    const collectionRef = collection(db, 'categories')
+    const q = query(collectionRef)
+    const querySnapshot = await getDocs(q)
+
+    const categoryMap = querySnapshot.docs.reduce((acc, snapshot) => {
+        const { title, items } = snapshot.data()
+        acc[title.toLowerCase()] = items
+        return acc
+    }, {})
+
+    return categoryMap
+}
+export const getCategories = async () => {
+    const collectionRef = collection(db, 'categories')
+    const q = query(collectionRef)
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map((snapshot) => {
+        const { title, imageUrl } = snapshot.data()
+        return { title, imageUrl }
+    })
+}
 
 export const createUserDocumentFromAuth = async (userAuth, additionalData = {}) => {
     if (!userAuth) { return; }
